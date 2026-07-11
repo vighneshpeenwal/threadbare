@@ -1103,9 +1103,9 @@ function renderLab() {
       `<span class="sdot ${i < l.votes ? (i === l.votes-1 && isVoted ? 'hot' : 'filled') : ''}"></span>`
     ).join('');
     return `
-    <div class="lab-card" onclick="switchPage('lab-detail',${l.id})">
+    <div class="lab-card" onclick="switchPage('lab-detail','${l.id}')">
       <div class="lab-card-top">
-        <span class="lab-card-num">${String(l.id).replace('10','')}</span>
+        <span class="lab-card-num">${LAB.indexOf(l) + 1}</span>
         <span class="lab-heat-badge ${heatCls}">${heatTxt.trim()}</span>
       </div>
       <div class="lab-saying">${l.saying}</div>
@@ -1121,7 +1121,7 @@ function renderLab() {
       <div class="lab-card-footer">
         <span class="vibe-tag">${l.tag}</span>
         <button class="vote-btn ${isVoted?'voted':''} ${l.votes>=20?'flash-ready':''}"
-          onclick="event.stopPropagation();castVote(${l.id})">
+          onclick="event.stopPropagation();castVote('${l.id}')">
           ${l.votes >= 20 ? '⚡ flash open' : isVoted ? '✓ voted' : 'i want this'}
         </button>
       </div>
