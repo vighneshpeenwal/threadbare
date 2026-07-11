@@ -865,40 +865,8 @@ const SHELF = [
    price:599,stock:5,sizes:['XS','S','M','L','XL'],oos:['2XL']},
 ];
 
-const LAB = [
-  {id:101,tag:'existential',emoji:'🌊',
-   saying:'"city-facing.\nsea-adjacent.\nmostly okay."',
-   sub:'marine drive at 11pm energy, bottled.',
-   votes:19,heat:'fire'},
-  {id:102,tag:'corpo',emoji:'💼',
-   saying:'"i contribute\nto company culture\nby leaving on time"',
-   sub:'radical act of our generation.',
-   votes:14,heat:'fire'},
-  {id:103,tag:'softly',emoji:'🫙',
-   saying:'"healing,\nbut also snacking"',
-   sub:'therapy is expensive. charcuterie is therapy.',
-   votes:11,heat:'warm'},
-  {id:104,tag:'chronically',emoji:'👁',
-   saying:'"perceived online,\ndeceased irl"',
-   sub:'parasocial is a lifestyle.',
-   votes:6,heat:'cold'},
-  {id:105,tag:'existential',emoji:'🕰',
-   saying:'"on time\nto the wrong thing.\nevery time."',
-   sub:'punctual. misaligned. fine.',
-   votes:17,heat:'fire'},
-  {id:106,tag:'corpo',emoji:'📊',
-   saying:'"aligned\non being\nunaligned"',
-   sub:'the most corporate sentence ever spoken.',
-   votes:3,heat:'new'},
-  {id:107,tag:'softly',emoji:'🌙',
-   saying:'"sleeping on it\nfor three weeks"',
-   sub:'the answer will come. probably.',
-   votes:8,heat:'warm'},
-  {id:108,tag:'chronically',emoji:'🎞',
-   saying:'"extremely normal\nabout this"',
-   sub:'*has sent 47 related links in the last hour*',
-   votes:15,heat:'fire'},
-];
+// LAB loaded from Supabase — starts empty, filled on init
+let LAB = [];
 
 // ══════════════════════════════════════
 //  STATE
@@ -1168,24 +1136,7 @@ function labFilter(tag, el) {
   renderLab();
 }
 
-function castVote(id) {
-  if(voted.has(id)) { toast('already voted.'); return; }
-  const item = LAB.find(l => l.id === id);
-  item.votes = Math.min(item.votes + 1, 20);
-  voted.add(id);
-  renderLab();
-  if(item.votes >= 20) {
-    document.getElementById('nav-live').style.display = 'flex';
-    toast(`⚡ ${item.saying.split('\n')[0]} just hit 20! flash sale opening...`, 4000);
-    setTimeout(() => {
-      currentLabItem = item;
-      selectedSize = null;
-      switchPage('lab-detail', item.id);
-    }, 1500);
-  } else {
-    toast(`vote locked. ${20 - item.votes} more needed.`);
-  }
-}
+// castVote is handled by Supabase version below
 
 function openLabDetail(id) {
   currentLabItem = LAB.find(l => l.id === id);
@@ -1261,23 +1212,7 @@ function goInterest() {
   switchPage('interest');
 }
 
-function submitInterest() {
-  const name = document.getElementById('f-name').value.trim();
-  const email = document.getElementById('f-email').value.trim();
-  if(!name || !email) { toast('name and email — that\'s all we need.'); return; }
-  if(!email.includes('@')) { toast('that email looks off.'); return; }
-  customerName = name;
-  const l = currentLabItem;
-  l.votes = Math.min(l.votes + 1, 20);
-  voted.add(l.id);
-  renderLab();
-  if(l.votes >= 20) {
-    document.getElementById('nav-live').style.display = 'flex';
-    startFlash(l, name);
-  } else {
-    showSuccess('interest', name, l);
-  }
-}
+// submitInterest is handled by Supabase version below
 
 // ══════════════════════════════════════
 //  FLASH SALE
@@ -1403,29 +1338,7 @@ function closeModal() {
   document.getElementById('idea-saying').value = '';
   document.getElementById('idea-why').value = '';
 }
-function submitIdea() {
-  const saying = document.getElementById('idea-saying').value.trim();
-  if(!saying) { toast('give us the saying. that\'s the whole point.'); return; }
-  if(saying.length < 4) { toast('a little more than that.'); return; }
-  if(hasBadWord(saying)) { toast('keep it weird, not gross. try again.'); return; }
-  const why = document.getElementById('idea-why').value.trim();
-  if(why && hasBadWord(why)) { toast('the why can be edgy, not offensive. try again.'); return; }
-  const vibe = document.getElementById('idea-vibe').value;
-  const vibeEmojis = {existential:'🌑',softly:'🌿',chronically:'🌐',corpo:'🏢'};
-  LAB.unshift({
-    id: Date.now(), tag: vibe, emoji: vibeEmojis[vibe],
-    saying: `"${saying}"`,
-    sub: why || 'freshly pitched. make some noise.',
-    votes: 0, heat: 'new'
-  });
-  closeModal();
-  labFilterActive = 'all';
-  document.querySelectorAll('#lab-filter-pills .lfpill').forEach(p => p.classList.remove('on'));
-  document.querySelector('#lab-filter-pills .lfpill').classList.add('on');
-  renderLab();
-  switchPage('lab');
-  toast('your idea is live. now get people to vote. 🎯', 4000);
-}
+// submitIdea handled by Supabase version in INIT section
 
 // ══════════════════════════════════════
 //  TOAST
@@ -1452,10 +1365,254 @@ function shareIt() {
 }
 
 // ══════════════════════════════════════
+//  SUPABASE
+// ══════════════════════════════════════
+const SUPA_URL = 'https://ezqmsoxluoxyvlbekcsj.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6cW1zb3hsdW94eXZsYmVrY3NqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM3NDg2MzEsImV4cCI6MjA5OTMyNDYzMX0.vlUbf8NqopLU1moDqduT-SsN8NkPZB2FYsCpTNy9Gow';
+
+const supa = {
+  async get(table, params='') {
+    const r = await fetch(`${SUPA_URL}/rest/v1/${table}?${params}`, {
+      headers: { apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}`, 'Content-Type': 'application/json' }
+    });
+    return r.json();
+  },
+  async post(table, body) {
+    const r = await fetch(`${SUPA_URL}/rest/v1/${table}`, {
+      method: 'POST',
+      headers: { apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=representation' },
+      body: JSON.stringify(body)
+    });
+    return r.json();
+  },
+  async patch(table, filter, body) {
+    const r = await fetch(`${SUPA_URL}/rest/v1/${table}?${filter}`, {
+      method: 'PATCH',
+      headers: { apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=representation' },
+      body: JSON.stringify(body)
+    });
+    return r.json();
+  },
+  realtime(table, cb) {
+    const ws = new WebSocket(`${SUPA_URL.replace('https','wss')}/realtime/v1/websocket?apikey=${SUPA_KEY}&vsn=1.0.0`);
+    ws.onopen = () => {
+      ws.send(JSON.stringify({topic:`realtime:public:${table}`,event:'phx_join',payload:{},ref:null}));
+    };
+    ws.onmessage = (e) => {
+      const msg = JSON.parse(e.data);
+      if(msg.event === 'INSERT' || msg.event === 'UPDATE') cb(msg.payload.record);
+    };
+    return ws;
+  }
+};
+
+function heatFromVotes(v) {
+  if(v >= 16) return 'fire';
+  if(v >= 8) return 'warm';
+  if(v <= 2) return 'new';
+  return 'cold';
+}
+
+function emojiForTag(tag) {
+  return {existential:'🌑',softly:'🌿',chronically:'🌐',corpo:'🏢'}[tag] || '✦';
+}
+
+async function loadLab() {
+  const grid = document.getElementById('lab-grid');
+  grid.innerHTML = `<div style="padding:3rem;color:var(--gray-400);font-size:13px;grid-column:1/-1;text-align:center;">loading drops...</div>`;
+  try {
+    const rows = await supa.get('drops', 'order=votes.desc');
+    LAB = rows.map(r => ({
+      id: r.id,
+      tag: r.tag,
+      emoji: r.emoji || emojiForTag(r.tag),
+      saying: r.saying,
+      sub: r.sub || '',
+      votes: r.votes || 0,
+      heat: heatFromVotes(r.votes || 0)
+    }));
+    renderLab();
+    document.getElementById('lc-active').textContent = LAB.length;
+    subscribeToVotes();
+  } catch(e) {
+    grid.innerHTML = `<div style="padding:3rem;color:var(--gray-400);font-size:13px;grid-column:1/-1;text-align:center;">couldn't load drops. refresh and try again.</div>`;
+  }
+}
+
+function subscribeToVotes() {
+  // poll every 15s as lightweight realtime (WebSocket realtime needs auth setup)
+  setInterval(async () => {
+    try {
+      const rows = await supa.get('drops', 'order=votes.desc');
+      rows.forEach(r => {
+        const item = LAB.find(l => l.id === r.id);
+        if(item && item.votes !== r.votes) {
+          item.votes = r.votes;
+          item.heat = heatFromVotes(r.votes);
+        }
+      });
+      renderLab();
+    } catch(e) {}
+  }, 15000);
+}
+
+async function castVote(id) {
+  let userEmail = localStorage.getItem('tb_email');
+  if(!userEmail) {
+    await askEmail();
+    userEmail = localStorage.getItem('tb_email');
+    if(!userEmail) return;
+  }
+  if(voted.has(id)) { toast('already voted on this one.'); return; }
+
+  const item = LAB.find(l => l.id === id);
+  item.votes = Math.min(item.votes + 1, 20);
+  item.heat = heatFromVotes(item.votes);
+  voted.add(id);
+  renderLab();
+
+  try {
+    await supa.post('votes', { drop_id: id, email: userEmail });
+    await supa.patch('drops', `id=eq.${id}`, { votes: item.votes });
+    toast(`vote locked. ${20 - item.votes} more needed.`);
+    if(item.votes >= 20) {
+      document.getElementById('nav-live').style.display = 'flex';
+      toast(`⚡ it hit 20! flash sale opening...`, 4000);
+      setTimeout(() => {
+        currentLabItem = item;
+        selectedSize = null;
+        switchPage('lab-detail', item.id);
+      }, 1500);
+    }
+  } catch(e) {
+    toast('looks like you already voted on this.');
+  }
+}
+
+function askEmail() {
+  return new Promise((resolve) => {
+    // inject a lightweight email capture overlay
+    const existing = document.getElementById('email-capture');
+    if(existing) existing.remove();
+    const el = document.createElement('div');
+    el.id = 'email-capture';
+    el.style.cssText = `position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:600;display:flex;align-items:center;justify-content:center;padding:1rem;`;
+    el.innerHTML = `
+      <div style="background:var(--white);border-radius:var(--r-xl);padding:2rem;width:100%;max-width:400px;box-shadow:0 24px 64px rgba(0,0,0,.15);">
+        <h3 style="font-size:20px;font-weight:700;letter-spacing:-.6px;margin-bottom:.5rem;">drop your email.</h3>
+        <p style="font-size:13px;color:var(--gray-600);margin-bottom:1.25rem;line-height:1.6;">we only use it to notify you when a flash sale opens. that's it. no newsletter.</p>
+        <input type="email" id="email-capture-input" placeholder="your@email.com" style="width:100%;font-family:var(--font-d);font-size:14px;padding:11px 14px;border-radius:var(--r-sm);border:1px solid var(--gray-200);margin-bottom:1rem;-webkit-appearance:none;" />
+        <button onclick="confirmEmail()" style="width:100%;font-family:var(--font-d);font-size:14px;font-weight:700;background:var(--ink);color:var(--yellow);border:none;padding:14px;border-radius:100px;cursor:pointer;">confirm vote →</button>
+        <button onclick="document.getElementById('email-capture').remove()" style="width:100%;margin-top:8px;font-family:var(--font-d);font-size:12px;background:none;border:none;color:var(--gray-400);cursor:pointer;padding:4px;">cancel</button>
+      </div>
+    `;
+    document.body.appendChild(el);
+    setTimeout(() => document.getElementById('email-capture-input')?.focus(), 100);
+    window._emailResolve = resolve;
+  });
+}
+
+function confirmEmail() {
+  const input = document.getElementById('email-capture-input');
+  const val = input?.value.trim();
+  if(!val || !val.includes('@')) {
+    input.style.borderColor = 'var(--red)';
+    input.placeholder = 'needs to be a real email';
+    return;
+  }
+  localStorage.setItem('tb_email', val);
+  document.getElementById('email-capture')?.remove();
+  if(window._emailResolve) { window._emailResolve(val); window._emailResolve = null; }
+}
+
+async function submitInterest() {
+  const name = document.getElementById('f-name').value.trim();
+  const email = document.getElementById('f-email').value.trim();
+  if(!name || !email) { toast('name and email — that\'s all we need.'); return; }
+  if(!email.includes('@')) { toast('that email looks off.'); return; }
+  customerName = name;
+  localStorage.setItem('tb_email', email);
+  localStorage.setItem('tb_name', name);
+  const l = currentLabItem;
+
+  try {
+    await supa.post('interests', {
+      drop_id: l.id,
+      name,
+      email,
+      size: selectedSize,
+      why: document.getElementById('f-why').value.trim() || null
+    });
+  } catch(e) {
+    // already expressed interest — continue anyway
+  }
+
+  l.votes = Math.min(l.votes + 1, 20);
+  voted.add(l.id);
+  try { await supa.patch('drops', `id=eq.${l.id}`, { votes: l.votes }); } catch(e) {}
+  renderLab();
+
+  if(l.votes >= 20) {
+    document.getElementById('nav-live').style.display = 'flex';
+    startFlash(l, name);
+  } else {
+    showSuccess('interest', name, l);
+  }
+}
+
+async function submitIdea() {
+  const saying = document.getElementById('idea-saying').value.trim();
+  if(!saying) { toast('give us the saying. that\'s the whole point.'); return; }
+  if(saying.length < 4) { toast('a little more than that.'); return; }
+  if(hasBadWord(saying)) { toast('keep it weird, not gross. try again.'); return; }
+  const why = document.getElementById('idea-why').value.trim();
+  if(why && hasBadWord(why)) { toast('the why can be edgy, not offensive. try again.'); return; }
+  const vibe = document.getElementById('idea-vibe').value;
+
+  const btn = document.querySelector('#idea-modal .f-submit');
+  btn.textContent = 'dropping it...';
+  btn.disabled = true;
+
+  try {
+    const rows = await supa.post('drops', {
+      saying: `"${saying}"`,
+      sub: why || 'freshly pitched. make some noise.',
+      tag: vibe,
+      emoji: emojiForTag(vibe),
+      votes: 0,
+      heat: 'new'
+    });
+    const newDrop = rows[0];
+    LAB.unshift({
+      id: newDrop.id, tag: vibe, emoji: emojiForTag(vibe),
+      saying: `"${saying}"`,
+      sub: why || 'freshly pitched. make some noise.',
+      votes: 0, heat: 'new'
+    });
+    closeModal();
+    labFilterActive = 'all';
+    document.querySelectorAll('#lab-filter-pills .lfpill').forEach(p => p.classList.remove('on'));
+    document.querySelector('#lab-filter-pills .lfpill').classList.add('on');
+    renderLab();
+    switchPage('lab');
+    toast('your idea is live. now get people to vote. 🎯', 4000);
+  } catch(e) {
+    toast('something went wrong. try again.');
+  } finally {
+    btn.textContent = 'drop it in the lab →';
+    btn.disabled = false;
+  }
+}
+
+// ══════════════════════════════════════
 //  INIT
 // ══════════════════════════════════════
+// restore email from previous visit
+const savedEmail = localStorage.getItem('tb_email');
+const savedName = localStorage.getItem('tb_name');
+
 renderShelf();
-renderLab();
+loadLab();
 </script>
 </body>
 </html>
