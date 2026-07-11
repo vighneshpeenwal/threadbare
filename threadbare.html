@@ -1079,8 +1079,54 @@ function closeCart() {
   document.getElementById('cart-drawer').classList.remove('open');
 }
 function checkout() {
+  if(cart.length === 0) return;
+  const total = cart.reduce((s,c) => s + c.price, 0);
+  const name = localStorage.getItem('tb_name') || '';
+  const email = localStorage.getItem('tb_email') || '';
   closeCart();
-  toast('redirecting to razorpay... (demo)');
+  const script = document.createElement('script');
+  script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+  script.onload = () => {
+    const options = {
+      key: 'rzp_test_TC847UNmPvLfJG',
+      amount: total * 100,
+      currency: 'INR',
+      name: 'threadbare.',
+      description: `${cart.length} shirt${cart.length>1?'s':''}`,
+      image: '',
+      prefill: { name, email },
+      theme: { color: '#f0ec3c' },
+      handler: async function(response) {
+        await supa.post('orders', {
+          email: email || 'unknown',
+          items: cart,
+          total: total,
+          status: 'paid',
+          razorpay_id: response.razorpay_payment_id
+        });
+        cart = [];
+        updateCartUI();
+        document.getElementById('s-icon').textContent = '🛍';
+        document.getElementById('s-h').textContent = 'order confirmed.';
+        document.getElementById('s-p').textContent = `₹${total} paid. ships in 3–5 days via qikink. check your email for confirmation.`;
+        document.getElementById('s-card').innerHTML = `
+          <div class="srow"><span>items</span><span>${cart.length || 'done'}</span></div>
+          <div class="srow"><span>payment id</span><span>${response.razorpay_payment_id}</span></div>
+          <div class="srow"><span>total</span><span>₹${total}</span></div>
+          <div class="srow"><span>fulfillment</span><span>qikink, india</span></div>
+        `;
+        document.getElementById('s-btn').textContent = 'back to the shelf';
+        document.getElementById('s-btn').onclick = () => switchPage('shelf');
+        switchPage('success');
+      },
+      modal: {
+        ondismiss: () => toast('payment cancelled. your bag is still waiting.')
+      }
+    };
+    const rzp = new Razorpay(options);
+    rzp.open();
+  };
+  document.body.appendChild(script);
 }
 
 // ══════════════════════════════════════
