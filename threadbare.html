@@ -1,0 +1,1461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>threadbare. — not for everyone.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --black:#0f0f0f;
+  --ink:#1a1a1a;
+  --yellow:#f0ec3c;
+  --yellow-dim:#c8c420;
+  --white:#f8f7f2;
+  --warm:#f0ede4;
+  --gray-50:#f5f4f0;
+  --gray-100:#ebebeb;
+  --gray-200:#d4d4d4;
+  --gray-400:#999;
+  --gray-600:#555;
+  --red:#e63c2f;
+  --red-bg:#fdf0ef;
+  --green:#2d6a4f;
+  --green-bg:#eaf4ee;
+  --r-sm:6px;--r-md:12px;--r-lg:18px;--r-xl:24px;
+  --font-d:'Space Grotesk',sans-serif;
+  --font-m:'Space Mono',monospace;
+}
+html{scroll-behavior:smooth;}
+body{font-family:var(--font-d);background:var(--white);color:var(--ink);min-height:100vh;overflow-x:hidden;}
+
+/* ── GLOBAL UTILS ── */
+.mono{font-family:var(--font-m);}
+.eyebrow{font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--gray-400);}
+.section-wrap{max-width:1120px;margin:0 auto;padding:0 2rem;}
+
+/* ── NAV ── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:200;
+  height:56px;display:flex;align-items:center;
+  padding:0 2rem;
+  background:var(--white);
+  border-bottom:1px solid var(--gray-100);
+}
+.nav-logo{font-size:20px;font-weight:700;letter-spacing:-1.2px;cursor:pointer;text-decoration:none;color:var(--ink);}
+.nav-logo em{color:var(--gray-400);font-style:normal;}
+.nav-center{flex:1;display:flex;justify-content:center;gap:4px;}
+.nav-tab{
+  font-family:var(--font-d);font-size:12px;font-weight:500;
+  padding:6px 18px;border-radius:100px;
+  border:1px solid transparent;background:transparent;
+  color:var(--gray-600);cursor:pointer;transition:all .15s;
+  letter-spacing:.2px;
+}
+.nav-tab:hover{color:var(--ink);border-color:var(--gray-200);}
+.nav-tab.active-shelf{background:var(--ink);color:var(--white);border-color:var(--ink);}
+.nav-tab.active-lab{background:var(--yellow);color:var(--ink);border-color:var(--yellow);}
+.nav-right{display:flex;align-items:center;gap:10px;}
+.nav-live{display:none;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--red);text-transform:uppercase;letter-spacing:.8px;}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--red);animation:blink 1.3s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+.cart-btn{
+  position:relative;font-family:var(--font-d);font-size:12px;font-weight:600;
+  padding:7px 16px;border-radius:100px;
+  background:var(--ink);color:var(--yellow);border:none;cursor:pointer;
+  transition:background .15s;
+}
+.cart-btn:hover{background:#333;}
+.cart-count{
+  position:absolute;top:-5px;right:-5px;
+  width:16px;height:16px;border-radius:50%;
+  background:var(--red);color:#fff;
+  font-size:9px;font-weight:700;
+  display:none;align-items:center;justify-content:center;
+}
+
+/* ── PAGES ── */
+.page{display:none;padding-top:56px;}
+.page.active{display:block;}
+
+/* ══════════════════════════════
+   SHELF — calm, shop-like
+══════════════════════════════ */
+.shelf-hero{
+  padding:5rem 2rem 4rem;
+  border-bottom:1px solid var(--gray-100);
+}
+.shelf-hero-inner{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;}
+@media(max-width:680px){.shelf-hero-inner{grid-template-columns:1fr;gap:2rem;}}
+.shelf-h1{font-size:clamp(36px,5vw,64px);font-weight:700;letter-spacing:-2.5px;line-height:.95;margin-bottom:1.25rem;}
+.shelf-h1 .muted{color:var(--gray-400);}
+.shelf-sub{font-size:15px;color:var(--gray-600);line-height:1.75;max-width:380px;margin-bottom:2rem;}
+.shelf-stats{display:flex;gap:2.5rem;}
+.shelf-stat span{display:block;font-family:var(--font-m);font-size:24px;font-weight:700;letter-spacing:-1px;}
+.shelf-stat p{font-size:10px;color:var(--gray-400);text-transform:uppercase;letter-spacing:1px;margin-top:2px;}
+.shelf-hero-right{display:flex;flex-direction:column;gap:12px;}
+.hero-shirt-preview{
+  background:var(--gray-50);border:1px solid var(--gray-100);
+  border-radius:var(--r-xl);padding:2rem;
+  display:flex;align-items:center;justify-content:center;
+  min-height:160px;font-family:var(--font-m);font-size:15px;
+  font-weight:700;text-align:center;line-height:1.5;
+  position:relative;overflow:hidden;cursor:pointer;
+  transition:border-color .15s;
+}
+.hero-shirt-preview:hover{border-color:var(--gray-400);}
+.hero-shirt-preview.featured{background:var(--ink);color:var(--yellow);border-color:var(--ink);}
+.preview-badge{
+  position:absolute;top:12px;left:12px;
+  font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;
+  padding:3px 8px;border-radius:100px;
+}
+.badge-bestseller{background:var(--yellow);color:var(--ink);}
+.badge-new{background:var(--green-bg);color:var(--green);}
+.badge-low{background:var(--red-bg);color:var(--red);}
+
+/* shelf filter */
+.shelf-filters{
+  padding:1.5rem 2rem;border-bottom:1px solid var(--gray-100);
+  position:sticky;top:56px;z-index:100;background:var(--white);
+}
+.shelf-filters-inner{max-width:1120px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
+.filter-pills{display:flex;gap:6px;flex-wrap:wrap;}
+.fpill{
+  font-family:var(--font-d);font-size:11px;font-weight:500;
+  padding:5px 14px;border-radius:100px;
+  border:1px solid var(--gray-200);background:transparent;
+  color:var(--gray-600);cursor:pointer;transition:all .12s;
+}
+.fpill:hover{border-color:var(--ink);color:var(--ink);}
+.fpill.on{background:var(--ink);color:var(--white);border-color:var(--ink);}
+.sort-select{
+  font-family:var(--font-d);font-size:11px;color:var(--gray-600);
+  border:1px solid var(--gray-200);border-radius:100px;
+  padding:5px 12px;background:transparent;cursor:pointer;
+}
+
+/* shelf grid */
+.shelf-grid-section{padding:2.5rem 2rem 5rem;}
+.shelf-grid{
+  max-width:1120px;margin:0 auto;
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:16px;
+}
+.shelf-card{
+  background:var(--white);border:1px solid var(--gray-100);
+  border-radius:var(--r-xl);overflow:hidden;
+  cursor:pointer;transition:all .18s;
+}
+.shelf-card:hover{border-color:var(--gray-200);transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.05);}
+.shelf-visual{
+  height:220px;display:flex;align-items:center;justify-content:center;
+  padding:2rem;position:relative;text-align:center;
+  font-family:var(--font-m);font-size:13px;font-weight:700;line-height:1.55;
+}
+.shelf-visual-bg{position:absolute;font-size:90px;opacity:.06;top:50%;left:50%;transform:translate(-50%,-50%);}
+.shelf-body{padding:1.25rem;border-top:1px solid var(--gray-100);}
+.shelf-name{font-size:13px;font-weight:600;margin-bottom:4px;line-height:1.4;font-family:var(--font-m);}
+.shelf-vibe{font-size:11px;color:var(--gray-400);margin-bottom:10px;}
+.shelf-bottom{display:flex;align-items:center;justify-content:space-between;}
+.shelf-price{font-family:var(--font-m);font-size:16px;font-weight:700;}
+.shelf-stock{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;}
+.stock-good{color:var(--green);}
+.stock-low{color:var(--red);}
+.stock-out{color:var(--gray-400);}
+.add-btn{
+  font-family:var(--font-d);font-size:12px;font-weight:600;
+  padding:7px 16px;border-radius:100px;
+  background:var(--ink);color:var(--yellow);
+  border:none;cursor:pointer;transition:all .12s;
+}
+.add-btn:hover{background:#333;}
+.add-btn:disabled{background:var(--gray-200);color:var(--gray-400);cursor:not-allowed;}
+
+/* ── SHELF DETAIL ── */
+.shelf-detail-wrap{max-width:1000px;margin:0 auto;padding:3rem 2rem 5rem;}
+.back-btn{
+  font-family:var(--font-d);font-size:12px;font-weight:500;
+  background:none;border:1px solid var(--gray-200);color:var(--gray-600);
+  padding:6px 14px;border-radius:100px;cursor:pointer;
+  margin-bottom:2rem;display:inline-flex;align-items:center;gap:6px;
+  transition:all .12s;
+}
+.back-btn:hover{border-color:var(--ink);color:var(--ink);}
+.shelf-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:3.5rem;align-items:start;}
+@media(max-width:640px){.shelf-detail-grid{grid-template-columns:1fr;}}
+.shelf-detail-visual{
+  border-radius:var(--r-xl);height:380px;
+  display:flex;align-items:center;justify-content:center;
+  text-align:center;padding:2.5rem;
+  font-family:var(--font-m);font-size:18px;font-weight:700;line-height:1.5;
+  position:relative;overflow:hidden;
+}
+.shelf-detail-right{}
+.detail-price-row{display:flex;align-items:baseline;gap:8px;margin:1rem 0 1.5rem;}
+.detail-price{font-family:var(--font-m);font-size:32px;font-weight:700;}
+.detail-shipping{font-size:12px;color:var(--gray-400);}
+.size-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.5rem;}
+.sz{
+  font-family:var(--font-d);font-size:12px;font-weight:600;
+  width:44px;height:44px;border-radius:var(--r-sm);
+  border:1px solid var(--gray-200);background:var(--white);
+  color:var(--ink);cursor:pointer;transition:all .1s;
+  display:flex;align-items:center;justify-content:center;
+}
+.sz:hover{border-color:var(--ink);}
+.sz.picked{background:var(--ink);color:var(--yellow);border-color:var(--ink);}
+.sz.oos{color:var(--gray-300);cursor:not-allowed;text-decoration:line-through;}
+.atc-btn{
+  width:100%;font-family:var(--font-d);font-size:15px;font-weight:700;
+  background:var(--ink);color:var(--yellow);
+  border:none;padding:16px;border-radius:100px;
+  cursor:pointer;transition:all .15s;margin-bottom:10px;
+}
+.atc-btn:hover:not(:disabled){background:#333;}
+.atc-btn:disabled{opacity:.35;cursor:not-allowed;}
+.atc-hint{font-size:11px;color:var(--gray-400);text-align:center;line-height:1.5;}
+.detail-meta{margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--gray-100);}
+.detail-meta-row{display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-bottom:1px solid var(--gray-100);}
+.detail-meta-row:last-child{border-bottom:none;}
+.detail-meta-row span:first-child{color:var(--gray-400);}
+
+/* ══════════════════════════════
+   LAB — bright, energetic, visible
+══════════════════════════════ */
+
+/* lab hero — yellow-accent on white */
+.lab-hero{
+  background:var(--ink);color:var(--white);
+  padding:5rem 2rem 4rem;position:relative;overflow:hidden;
+}
+.lab-ticker{
+  position:absolute;top:0;left:0;right:0;
+  background:var(--yellow);color:var(--ink);
+  font-family:var(--font-m);font-size:10px;font-weight:700;
+  padding:7px 0;overflow:hidden;white-space:nowrap;letter-spacing:.5px;
+}
+.ticker-track{display:inline-block;animation:tick 25s linear infinite;}
+@keyframes tick{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.lab-hero-inner{max-width:1120px;margin:0 auto;padding-top:2rem;}
+.lab-h1{
+  font-size:clamp(42px,7vw,88px);font-weight:700;
+  letter-spacing:-3px;line-height:.9;margin-bottom:1.5rem;
+  color:var(--white);
+}
+.lab-h1 .accent{color:var(--yellow);}
+.lab-h1 .dim{color:#555;}
+.lab-sub{font-size:15px;color:#bbb;line-height:1.75;max-width:440px;margin-bottom:2.5rem;}
+.lab-rule-pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:3rem;}
+.rule-pill{
+  font-size:11px;font-weight:600;padding:6px 14px;border-radius:100px;
+  background:rgba(240,236,60,.12);border:1px solid rgba(240,236,60,.25);
+  color:var(--yellow);
+}
+.lab-counters{display:flex;gap:3rem;padding-top:2rem;border-top:1px solid #2a2a2a;}
+.lab-counter span{display:block;font-family:var(--font-m);font-size:28px;font-weight:700;color:var(--yellow);}
+.lab-counter p{font-size:10px;color:#666;text-transform:uppercase;letter-spacing:1.2px;margin-top:3px;}
+
+/* pitch-idea banner — prominent, above filter bar */
+.pitch-banner{
+  background:var(--yellow);padding:1.25rem 2rem;
+  border-bottom:1px solid var(--yellow-dim);
+}
+.pitch-banner-inner{
+  max-width:1120px;margin:0 auto;
+  display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+}
+.pitch-banner-copy{}
+.pitch-banner-copy h3{font-size:16px;font-weight:700;letter-spacing:-.4px;color:var(--ink);margin-bottom:2px;}
+.pitch-banner-copy p{font-size:12px;color:#555;}
+.pitch-banner-btn{
+  font-family:var(--font-d);font-size:13px;font-weight:700;
+  padding:11px 24px;border-radius:100px;
+  background:var(--ink);color:var(--yellow);
+  border:none;cursor:pointer;transition:all .15s;
+  white-space:nowrap;flex-shrink:0;
+}
+.pitch-banner-btn:hover{background:#333;}
+
+/* lab section filter bar */
+.lab-section-header{
+  padding:1rem 2rem;
+  border-bottom:1px solid var(--gray-100);
+  background:var(--white);
+  position:sticky;top:56px;z-index:99;
+}
+.lab-section-header-inner{max-width:1120px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;}
+.lab-filter-pills{display:flex;gap:6px;flex-wrap:wrap;}
+.lfpill{
+  font-family:var(--font-d);font-size:11px;font-weight:500;
+  padding:5px 14px;border-radius:100px;
+  border:1px solid var(--gray-200);background:transparent;
+  color:var(--gray-600);cursor:pointer;transition:all .12s;
+}
+.lfpill:hover{border-color:var(--ink);color:var(--ink);}
+.lfpill.on{background:var(--ink);color:var(--white);border-color:var(--ink);}
+.lab-count-label{font-size:11px;color:var(--gray-400);}
+
+/* lab grid — light background */
+.lab-grid-section{padding:2rem 2rem 5rem;background:var(--gray-50);}
+.lab-grid{
+  max-width:1120px;margin:0 auto;
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+  gap:12px;
+}
+
+/* lab card — white, clean, readable */
+.lab-card{
+  background:var(--white);
+  border:1.5px solid var(--gray-100);
+  border-radius:var(--r-xl);
+  padding:1.5rem;
+  cursor:pointer;transition:all .18s;
+  position:relative;
+}
+.lab-card:hover{border-color:var(--gray-200);transform:translateY(-2px);box-shadow:0 6px 24px rgba(0,0,0,.06);}
+.lab-card.nearly-card{border-color:#f0b8b3;background:#fffaf9;}
+.lab-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1rem;}
+.lab-card-num{font-family:var(--font-m);font-size:10px;color:var(--gray-200);font-weight:700;}
+.lab-heat-badge{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;padding:3px 10px;border-radius:100px;}
+.heat-fire{background:#fff0ee;color:#c0392b;}
+.heat-cold{background:#eef3ff;color:#3a5bc0;}
+.heat-new{background:var(--green-bg);color:var(--green);}
+.heat-locked{background:var(--gray-100);color:var(--gray-400);}
+.lab-saying{
+  font-family:var(--font-m);font-size:15px;font-weight:700;
+  line-height:1.45;color:var(--ink);margin-bottom:.5rem;
+}
+.lab-sub-text{font-size:12px;color:var(--gray-400);line-height:1.6;margin-bottom:1.25rem;}
+
+/* progress */
+.vote-bar-wrap{margin-bottom:8px;}
+.vote-bar-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.vote-count-label{font-family:var(--font-m);font-size:11px;color:var(--gray-400);}
+.vote-count-label strong{color:var(--ink);}
+.spots-left{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;}
+.spots-fire{color:var(--red);}
+.spots-cold{color:var(--gray-200);}
+.vote-bar{height:4px;background:var(--gray-100);border-radius:100px;overflow:hidden;}
+.vote-fill{height:100%;border-radius:100px;transition:width .6s cubic-bezier(.4,0,.2,1);}
+.fill-hot{background:linear-gradient(90deg,var(--red),var(--yellow));}
+.fill-cold{background:var(--gray-200);}
+
+/* slot dots */
+.slot-dots{display:flex;gap:3px;flex-wrap:wrap;margin:8px 0 1rem;}
+.sdot{width:11px;height:11px;border-radius:2px;background:var(--gray-100);border:1px solid var(--gray-200);transition:all .2s;}
+.sdot.filled{background:var(--ink);border-color:var(--ink);}
+.sdot.hot{background:var(--yellow);border-color:var(--yellow-dim);}
+
+/* lab card footer */
+.lab-card-footer{display:flex;align-items:center;justify-content:space-between;}
+.vote-btn{
+  font-family:var(--font-d);font-size:12px;font-weight:700;
+  padding:9px 22px;border-radius:100px;
+  background:var(--ink);color:var(--yellow);
+  border:none;cursor:pointer;transition:all .15s;
+}
+.vote-btn:hover{background:#333;}
+.vote-btn.voted{background:var(--green-bg);color:var(--green);border:1.5px solid var(--green);}
+.vote-btn.flash-ready{background:var(--red);color:#fff;border:none;animation:pulse-red 1.5s infinite;}
+@keyframes pulse-red{0%,100%{box-shadow:0 0 0 0 rgba(230,60,47,.4)}50%{box-shadow:0 0 0 8px rgba(230,60,47,0)}}
+.vibe-tag{font-size:10px;color:var(--gray-200);font-weight:600;text-transform:uppercase;letter-spacing:.8px;}
+
+/* ── LAB DETAIL ── */
+.lab-detail-wrap{max-width:900px;margin:0 auto;padding:3rem 2rem 5rem;background:var(--white);min-height:calc(100vh - 56px);}
+.lab-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:start;}
+@media(max-width:640px){.lab-detail-grid{grid-template-columns:1fr;}}
+.lab-visual-block{
+  background:var(--ink);
+  border-radius:var(--r-xl);height:340px;
+  display:flex;align-items:center;justify-content:center;
+  text-align:center;padding:2rem;
+  font-family:var(--font-m);font-size:16px;font-weight:700;
+  line-height:1.5;color:var(--yellow);
+}
+.lab-detail-tag{font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--gray-400);margin-bottom:.75rem;}
+.lab-detail-h2{font-family:var(--font-m);font-size:clamp(20px,3vw,28px);font-weight:700;line-height:1.1;color:var(--ink);margin-bottom:.75rem;letter-spacing:-1px;}
+.lab-detail-sub{font-size:14px;color:var(--gray-600);line-height:1.75;margin-bottom:2rem;}
+.unlock-panel{background:var(--gray-50);border:1.5px solid var(--gray-100);border-radius:var(--r-lg);padding:1.25rem;margin-bottom:1.5rem;}
+.unlock-panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.unlock-panel-title{font-size:13px;font-weight:600;color:var(--ink);}
+.nearly-tag{font-size:10px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.8px;animation:blink 1.2s infinite;}
+.interest-btn{
+  width:100%;font-family:var(--font-d);font-size:14px;font-weight:700;
+  background:var(--ink);color:var(--yellow);
+  border:none;padding:14px;border-radius:100px;
+  cursor:pointer;transition:all .15s;margin-bottom:8px;
+}
+.interest-btn:hover:not(:disabled){background:#333;}
+.interest-btn:disabled{opacity:.3;cursor:not-allowed;}
+.lab-detail-hint{font-size:11px;color:var(--gray-400);text-align:center;line-height:1.5;}
+
+/* ── INTEREST FORM ── */
+.form-page-bg{background:var(--gray-50);min-height:calc(100vh - 56px);}
+.form-wrap{max-width:500px;margin:0 auto;padding:3rem 2rem 5rem;}
+.form-card{background:var(--white);border:1px solid var(--gray-100);border-radius:var(--r-xl);padding:2rem;}
+.form-preview-bar{display:flex;gap:1rem;align-items:center;background:var(--ink);border-radius:var(--r-md);padding:1rem;margin-bottom:1.5rem;}
+.form-preview-emoji{font-size:24px;}
+.form-preview-saying{font-family:var(--font-m);font-size:11px;font-weight:700;color:var(--yellow);line-height:1.5;}
+.form-preview-meta{font-size:10px;color:#888;margin-top:2px;}
+.spot-banner{display:flex;align-items:center;gap:8px;background:var(--green-bg);border:1px solid #b7dfc8;border-radius:var(--r-md);padding:10px 12px;margin-bottom:1.25rem;font-size:12px;color:var(--green);font-weight:500;}
+.f-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--gray-400);margin-bottom:6px;display:block;}
+.f-input{
+  width:100%;font-family:var(--font-d);font-size:14px;
+  padding:11px 14px;border-radius:var(--r-sm);
+  border:1px solid var(--gray-200);background:var(--white);color:var(--ink);
+  transition:border-color .12s;margin-bottom:1.25rem;
+  -webkit-appearance:none;
+}
+.f-input:focus{outline:none;border-color:var(--ink);}
+.f-input::placeholder{color:var(--gray-200);}
+textarea.f-input{resize:vertical;min-height:70px;}
+.f-submit{
+  width:100%;font-family:var(--font-d);font-size:14px;font-weight:700;
+  background:var(--ink);color:var(--yellow);
+  border:none;padding:14px;border-radius:100px;
+  cursor:pointer;transition:all .15s;margin-bottom:8px;
+}
+.f-submit:hover{background:#333;}
+.f-note{font-size:11px;color:var(--gray-400);text-align:center;line-height:1.5;}
+
+/* ── FLASH SALE ── */
+.flash-page-bg{background:var(--ink);min-height:calc(100vh - 56px);}
+.flash-wrap{max-width:580px;margin:0 auto;padding:2.5rem 2rem 5rem;}
+.flash-top{display:flex;align-items:center;gap:10px;margin-bottom:2rem;}
+.flash-badge-live{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;padding:5px 12px;border-radius:100px;background:var(--red);color:#fff;animation:blink 1.3s infinite;}
+.flash-only{font-size:11px;color:#333;}
+.countdown-num{font-family:var(--font-m);font-size:clamp(60px,12vw,96px);font-weight:700;letter-spacing:-4px;line-height:1;color:var(--white);transition:color .3s;}
+.countdown-num.urgent{color:var(--red);}
+.countdown-sub{font-size:11px;color:#333;text-transform:uppercase;letter-spacing:1px;margin-top:4px;margin-bottom:1.5rem;}
+.flash-prog{height:4px;background:#1a1a1a;border-radius:100px;margin-bottom:2.5rem;overflow:hidden;}
+.flash-prog-fill{height:100%;background:var(--red);border-radius:100px;transition:width 1s linear;}
+.flash-shirt-row{display:flex;gap:12px;align-items:center;background:#0d0d0d;border:1px solid #1e1e1e;border-radius:var(--r-lg);padding:1rem;margin-bottom:2rem;}
+.flash-shirt-emoji{font-size:26px;}
+.flash-shirt-saying{font-family:var(--font-m);font-size:12px;font-weight:700;color:var(--white);line-height:1.4;}
+.flash-shirt-size{font-size:10px;color:#444;margin-top:2px;}
+.pay-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:#444;margin-bottom:10px;}
+.pay-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.pay-opt{
+  border:1px solid #1e1e1e;border-radius:var(--r-md);
+  padding:14px;cursor:pointer;transition:all .12s;background:#0d0d0d;
+}
+.pay-opt:hover{border-color:#333;}
+.pay-opt.sel{border:2px solid var(--yellow);}
+.pay-amt{font-family:var(--font-m);font-size:18px;font-weight:700;color:var(--white);}
+.pay-desc{font-size:10px;color:#444;margin-top:2px;}
+.custom-pay-row{margin-bottom:1.5rem;}
+.confirm-btn{
+  width:100%;font-family:var(--font-d);font-size:15px;font-weight:700;
+  background:var(--yellow);color:var(--ink);
+  border:none;padding:18px;border-radius:100px;
+  cursor:pointer;transition:all .15s;letter-spacing:-.2px;
+}
+.confirm-btn:hover:not(:disabled){background:#e0dc30;transform:translateY(-1px);}
+.confirm-btn:disabled{opacity:.35;cursor:not-allowed;transform:none;}
+.flash-foot{font-size:11px;color:#222;text-align:center;margin-top:10px;line-height:1.5;}
+
+/* ── CART DRAWER ── */
+.cart-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;display:none;opacity:0;transition:opacity .25s;}
+.cart-overlay.open{display:block;opacity:1;}
+.cart-drawer{
+  position:fixed;top:0;right:0;bottom:0;width:380px;max-width:95vw;
+  background:var(--white);z-index:301;
+  transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);
+  display:flex;flex-direction:column;
+}
+.cart-drawer.open{transform:translateX(0);}
+.cart-head{padding:1.25rem 1.5rem;border-bottom:1px solid var(--gray-100);display:flex;align-items:center;justify-content:space-between;}
+.cart-head h3{font-size:16px;font-weight:700;letter-spacing:-.5px;}
+.cart-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--gray-400);line-height:1;}
+.cart-items{flex:1;overflow-y:auto;padding:1.25rem 1.5rem;}
+.cart-empty{text-align:center;padding:3rem 0;color:var(--gray-400);font-size:13px;}
+.cart-item{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--gray-100);}
+.ci-visual{width:60px;height:60px;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:24px;}
+.ci-name{font-family:var(--font-m);font-size:11px;font-weight:700;line-height:1.4;margin-bottom:3px;}
+.ci-meta{font-size:11px;color:var(--gray-400);}
+.ci-remove{font-size:11px;color:var(--red);cursor:pointer;background:none;border:none;padding:0;margin-top:4px;font-family:var(--font-d);}
+.ci-price{font-family:var(--font-m);font-size:14px;font-weight:700;margin-left:auto;flex-shrink:0;}
+.cart-foot{padding:1.25rem 1.5rem;border-top:1px solid var(--gray-100);}
+.cart-total-row{display:flex;justify-content:space-between;font-size:14px;font-weight:700;margin-bottom:1rem;}
+.cart-total-row span:last-child{font-family:var(--font-m);}
+.checkout-btn{
+  width:100%;font-family:var(--font-d);font-size:14px;font-weight:700;
+  background:var(--ink);color:var(--yellow);border:none;
+  padding:14px;border-radius:100px;cursor:pointer;transition:background .15s;
+}
+.checkout-btn:hover{background:#333;}
+.cart-note{font-size:11px;color:var(--gray-400);text-align:center;margin-top:8px;line-height:1.5;}
+
+/* ── SUCCESS ── */
+.success-page-bg{background:var(--gray-50);min-height:calc(100vh - 56px);}
+.success-wrap{max-width:460px;margin:0 auto;padding:5rem 2rem;text-align:center;}
+.success-icon{font-size:56px;margin-bottom:1.5rem;}
+.success-h{font-size:30px;font-weight:700;letter-spacing:-1.2px;color:var(--ink);margin-bottom:.75rem;}
+.success-p{font-size:14px;color:var(--gray-600);line-height:1.75;max-width:340px;margin:0 auto 2rem;}
+.success-card{background:var(--white);border:1px solid var(--gray-100);border-radius:var(--r-lg);padding:1.5rem;text-align:left;margin-bottom:1.5rem;}
+.srow{display:flex;justify-content:space-between;font-size:12px;padding:7px 0;border-bottom:1px solid var(--gray-100);}
+.srow:last-child{border-bottom:none;font-weight:700;}
+.srow span:first-child{color:var(--gray-400);}
+.srow span:last-child{color:var(--ink);font-family:var(--font-m);font-size:11px;}
+.success-btn{
+  width:100%;font-family:var(--font-d);font-size:14px;font-weight:600;
+  background:var(--ink);color:var(--yellow);border:none;
+  padding:14px;border-radius:100px;cursor:pointer;transition:all .15s;
+  margin-bottom:1rem;
+}
+.success-btn:hover{background:#333;}
+.ghost-btn{
+  width:100%;font-family:var(--font-d);font-size:13px;font-weight:500;
+  background:transparent;color:var(--gray-600);border:1px solid var(--gray-200);
+  padding:12px;border-radius:100px;cursor:pointer;transition:all .15s;
+}
+.ghost-btn:hover{border-color:var(--ink);color:var(--ink);}
+
+/* ── EXPIRED ── */
+.expired-wrap{max-width:400px;margin:6rem auto;padding:2rem;text-align:center;}
+
+/* ── IDEA SUBMIT MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:400;display:none;align-items:center;justify-content:center;padding:1rem;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--white);border:1px solid var(--gray-100);border-radius:var(--r-xl);padding:2rem;width:100%;max-width:480px;box-shadow:0 24px 64px rgba(0,0,0,.15);}
+.modal-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:.5rem;}
+.modal-head h3{font-size:22px;font-weight:700;color:var(--ink);letter-spacing:-.8px;}
+.modal-subhead{font-size:13px;color:var(--gray-600);margin-bottom:1.5rem;line-height:1.6;}
+.modal-close{background:none;border:none;color:var(--gray-400);font-size:22px;cursor:pointer;line-height:1;padding:2px;}
+
+/* ── TOAST ── */
+.toast{
+  position:fixed;bottom:24px;right:24px;z-index:500;
+  background:var(--ink);color:var(--white);
+  padding:12px 18px;border-radius:var(--r-md);
+  font-size:13px;font-weight:500;max-width:280px;
+  box-shadow:0 8px 32px rgba(0,0,0,.2);
+  transform:translateY(80px);opacity:0;
+  transition:all .3s cubic-bezier(.4,0,.2,1);
+  pointer-events:none;
+}
+.toast.show{transform:translateY(0);opacity:1;}
+
+/* ── RESPONSIVE ── */
+@media(max-width:480px){
+  nav{padding:0 1rem;}
+  .nav-center{display:none;}
+  .shelf-hero,.lab-hero{padding:3rem 1.25rem 2.5rem;}
+  .shelf-grid-section,.lab-grid-section{padding:1.5rem 1rem 4rem;}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" onclick="goHome()" href="#">thread<em>bare.</em></a>
+  <div class="nav-center">
+    <button class="nav-tab active-shelf" id="tab-shelf" onclick="switchPage('shelf')">the shelf</button>
+    <button class="nav-tab" id="tab-lab" onclick="switchPage('lab')">the lab ⚡</button>
+  </div>
+  <div class="nav-right">
+    <div class="nav-live" id="nav-live"><div class="live-dot"></div>flash live</div>
+    <button class="cart-btn" onclick="openCart()">
+      bag <span class="cart-count" id="cart-count">0</span>
+    </button>
+  </div>
+</nav>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- CART DRAWER -->
+<div class="cart-overlay" id="cart-overlay" onclick="closeCart()"></div>
+<div class="cart-drawer" id="cart-drawer">
+  <div class="cart-head">
+    <h3>your bag</h3>
+    <button class="cart-close" onclick="closeCart()">×</button>
+  </div>
+  <div class="cart-items" id="cart-items"></div>
+  <div class="cart-foot" id="cart-foot" style="display:none;">
+    <div class="cart-total-row"><span>total</span><span id="cart-total">₹0</span></div>
+    <button class="checkout-btn" onclick="checkout()">checkout via razorpay →</button>
+    <p class="cart-note">free shipping across india · 3–5 working days via qikink</p>
+  </div>
+</div>
+
+<!-- IDEA MODAL -->
+<div class="modal-overlay" id="idea-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>pitch an idea.</h3>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <p class="modal-subhead">if 20 people vote for it, we make it into a real shirt. no cost to pitch. no commitment to buy.</p>
+    <label class="f-label">the saying (what goes on the shirt)</label>
+    <input type="text" class="f-input" id="idea-saying" placeholder='"something only you would wear"' style="color:var(--ink);background:var(--white);">
+    <label class="f-label">the vibe category</label>
+    <select class="f-input" id="idea-vibe" style="color:var(--ink);background:var(--white);cursor:pointer;">
+      <option value="existential">existential dread</option>
+      <option value="softly">softly unhinged</option>
+      <option value="chronically">chronically online</option>
+      <option value="corpo">corpo refugee</option>
+    </select>
+    <label class="f-label">why does this shirt need to exist? (optional)</label>
+    <textarea class="f-input" id="idea-why" placeholder="make a case. be specific. be weird." style="color:var(--ink);background:var(--white);"></textarea>
+    <button class="f-submit" onclick="submitIdea()">drop it in the lab →</button>
+    <p class="f-note">goes live immediately. if 20 people vote for it, we make it.</p>
+  </div>
+</div>
+
+<!-- ════════════════════════
+     PAGE: SHELF
+════════════════════════ -->
+<div class="page active" id="page-shelf">
+
+  <!-- HERO -->
+  <section class="shelf-hero">
+    <div class="shelf-hero-inner">
+      <div>
+        <p class="eyebrow" style="margin-bottom:1.25rem;">the shelf — ready to order</p>
+        <h1 class="shelf-h1">the shirts<br>that made it.<br><span class="muted">already.</span></h1>
+        <p class="shelf-sub">these started in the lab. 20 people wanted them. they got made. now there's a small batch left. fixed price. ships in 3–5 days. no drama.</p>
+        <div class="shelf-stats">
+          <div class="shelf-stat"><span>₹599</span><p>fixed price</p></div>
+          <div class="shelf-stat"><span>3–5d</span><p>delivery</p></div>
+          <div class="shelf-stat"><span>COD</span><p>available</p></div>
+        </div>
+      </div>
+      <div class="shelf-hero-right">
+        <div class="hero-shirt-preview featured" onclick="switchPage('shelf-detail',1)">
+          <span class="preview-badge badge-bestseller">bestseller</span>
+          <div style="position:absolute;font-size:80px;opacity:.08;">👁</div>
+          <span style="position:relative;">"doing my best<br>(citation needed)"</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="hero-shirt-preview" onclick="switchPage('shelf-detail',2)" style="background:var(--gray-50);min-height:100px;font-size:11px;">
+            <span class="preview-badge badge-low">3 left</span>
+            "bun maska and<br>no small talk"
+          </div>
+          <div class="hero-shirt-preview" onclick="switchPage('shelf-detail',3)" style="background:var(--gray-50);min-height:100px;font-size:11px;">
+            <span class="preview-badge badge-new">new</span>
+            "leopard country.<br>still checked emails."
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FILTERS -->
+  <div class="shelf-filters">
+    <div class="shelf-filters-inner">
+      <div class="filter-pills" id="shelf-filter-pills">
+        <button class="fpill on" onclick="shelfFilter('all',this)">all</button>
+        <button class="fpill" onclick="shelfFilter('existential',this)">existential dread</button>
+        <button class="fpill" onclick="shelfFilter('softly',this)">softly unhinged</button>
+        <button class="fpill" onclick="shelfFilter('chronically',this)">chronically online</button>
+        <button class="fpill" onclick="shelfFilter('corpo',this)">corpo refugee</button>
+      </div>
+      <select class="sort-select" onchange="shelfSort(this.value)">
+        <option value="default">sort: featured</option>
+        <option value="low">sort: low stock first</option>
+        <option value="az">sort: a–z</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- GRID -->
+  <section class="shelf-grid-section">
+    <div class="shelf-grid" id="shelf-grid"></div>
+  </section>
+
+</div>
+
+<!-- PAGE: SHELF DETAIL -->
+<div class="page" id="page-shelf-detail">
+  <div class="shelf-detail-wrap">
+    <button class="back-btn" onclick="switchPage('shelf')">← back to shelf</button>
+    <div id="shelf-detail-content"></div>
+  </div>
+</div>
+
+<!-- ════════════════════════
+     PAGE: LAB
+════════════════════════ -->
+<div class="page" id="page-lab">
+
+  <!-- HERO -->
+  <section class="lab-hero">
+    <div class="lab-ticker">
+      <span class="ticker-track">
+        20 votes → flash sale opens → 20 minutes → pay what you want · no restocks · no reruns · shirts that shouldn't exist until you make them ·&nbsp;&nbsp;
+        20 votes → flash sale opens → 20 minutes → pay what you want · no restocks · no reruns · shirts that shouldn't exist until you make them ·&nbsp;&nbsp;
+      </span>
+    </div>
+    <div class="lab-hero-inner">
+      <h1 class="lab-h1">shirts that<br><span class="accent">don't exist</span><br><span class="dim">yet.</span></h1>
+      <p class="lab-sub">vote on an idea. if 20 people want it, it becomes real — a 20-minute flash sale fires for exactly those 20 people. you pick the price. the shirt ships. then it's gone forever.</p>
+      <div class="lab-rule-pills">
+        <span class="rule-pill">20 votes to unlock</span>
+        <span class="rule-pill">20 min flash window</span>
+        <span class="rule-pill">pay what you want</span>
+        <span class="rule-pill">no restocks</span>
+        <span class="rule-pill">1 of 20 only</span>
+      </div>
+      <div class="lab-counters">
+        <div class="lab-counter"><span id="lc-active">8</span><p>ideas brewing</p></div>
+        <div class="lab-counter"><span id="lc-made">23</span><p>shirts made</p></div>
+        <div class="lab-counter"><span id="lc-voters">141</span><p>people voting</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PITCH IDEA BANNER — prominent -->
+  <div class="pitch-banner">
+    <div class="pitch-banner-inner">
+      <div class="pitch-banner-copy">
+        <h3>got a saying that needs to exist on a shirt?</h3>
+        <p>pitch it. if 20 people vote for it, we make it. your idea, your shirt, your 19 strangers.</p>
+      </div>
+      <button class="pitch-banner-btn" onclick="openModal()">+ pitch an idea →</button>
+    </div>
+  </div>
+
+  <!-- STICKY FILTER BAR -->
+  <div class="lab-section-header">
+    <div class="lab-section-header-inner">
+      <div class="lab-filter-pills" id="lab-filter-pills">
+        <button class="lfpill on" onclick="labFilter('all',this)">all ideas</button>
+        <button class="lfpill" onclick="labFilter('existential',this)">existential dread</button>
+        <button class="lfpill" onclick="labFilter('softly',this)">softly unhinged</button>
+        <button class="lfpill" onclick="labFilter('chronically',this)">chronically online</button>
+        <button class="lfpill" onclick="labFilter('corpo',this)">corpo refugee</button>
+        <button class="lfpill" onclick="labFilter('hot',this)">🔥 nearly there</button>
+      </div>
+      <span class="lab-count-label" id="lab-count-label">8 ideas brewing</span>
+    </div>
+  </div>
+
+  <!-- LAB GRID -->
+  <section class="lab-grid-section">
+    <div class="lab-grid" id="lab-grid"></div>
+  </section>
+
+</div>
+
+<!-- PAGE: LAB DETAIL -->
+<div class="page" id="page-lab-detail">
+  <div class="lab-detail-wrap">
+    <button class="back-btn" onclick="switchPage('lab')">← back to lab</button>
+    <div id="lab-detail-content"></div>
+  </div>
+</div>
+
+<!-- PAGE: INTEREST FORM -->
+<div class="page" id="page-interest">
+  <div class="form-page-bg">
+    <div class="form-wrap">
+      <button class="back-btn" onclick="switchPage('lab-detail')">← back</button>
+      <h2 style="font-size:24px;font-weight:700;letter-spacing:-1px;color:var(--white);margin-bottom:.5rem;">lock in your spot.</h2>
+      <p style="font-size:13px;color:#444;margin-bottom:2rem;line-height:1.6;">no payment. no commitment. we just need to know you're real.</p>
+      <div class="form-card">
+        <div class="form-preview-bar" id="interest-preview"></div>
+        <div class="spot-banner" id="spot-banner"></div>
+        <label class="f-label">your name (or alter ego)</label>
+        <input type="text" class="f-input" id="f-name" placeholder="what people actually call you">
+        <label class="f-label">email — for when the flash fires</label>
+        <input type="email" class="f-input" id="f-email" placeholder="the one you check before bed">
+        <label class="f-label">why this shirt? (optional)</label>
+        <textarea class="f-input" id="f-why" placeholder="be specific. be weird. we love it."></textarea>
+        <button class="f-submit" onclick="submitInterest()">lock in my spot →</button>
+        <p class="f-note">you'll get one email when the flash opens. 20 minutes. that's it.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: FLASH -->
+<div class="page" id="page-flash">
+  <div class="flash-page-bg">
+    <div class="flash-wrap">
+      <div class="flash-top">
+        <div class="flash-badge-live">⚡ flash live</div>
+        <span class="flash-only">only you 20 see this</span>
+      </div>
+      <div class="countdown-num" id="flash-cd">20:00</div>
+      <div class="countdown-sub">minutes left to confirm</div>
+      <div class="flash-prog"><div class="flash-prog-fill" id="flash-bar" style="width:100%"></div></div>
+      <div class="flash-shirt-row" id="flash-shirt-row"></div>
+      <p class="pay-label">pay what you want</p>
+      <div class="pay-grid" id="pay-grid"></div>
+      <div class="custom-pay-row">
+        <label class="f-label">or type your own</label>
+        <input type="number" class="f-input" id="custom-pay" placeholder="₹ your number" min="1" oninput="customPayInput(this.value)">
+      </div>
+      <button class="confirm-btn" id="confirm-btn" onclick="completePurchase()" disabled>
+        confirm — <span id="pay-show">pick amount</span>
+      </button>
+      <p class="flash-foot">when the timer hits zero, this shirt retires. permanently. don't test it.</p>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: SUCCESS -->
+<div class="page" id="page-success">
+  <div class="success-page-bg">
+    <div class="success-wrap">
+      <div class="success-icon" id="s-icon">✌️</div>
+      <h2 class="success-h" id="s-h"></h2>
+      <p class="success-p" id="s-p"></p>
+      <div class="success-card" id="s-card"></div>
+      <button class="success-btn" id="s-btn" onclick="goHome()">back to threadbare</button>
+      <button class="ghost-btn" onclick="shareIt()">share with your weird friends</button>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: EXPIRED -->
+<div class="page" id="page-expired">
+  <div class="flash-page-bg">
+    <div class="expired-wrap">
+      <div style="font-size:56px;margin-bottom:1.5rem;">💨</div>
+      <h2 style="font-size:30px;font-weight:700;letter-spacing:-1.2px;color:var(--white);margin-bottom:.75rem;">it's gone.</h2>
+      <p style="font-size:14px;color:#444;line-height:1.75;margin-bottom:2rem;">20 minutes. that was the window. this shirt is retired. permanently. that's the whole point.</p>
+      <button class="success-btn" onclick="switchPage('lab')">find what's brewing</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════
+//  DATA
+// ══════════════════════════════════════
+const SHELF = [
+  {id:1,tag:'existential',emoji:'🖤',bg:'#0f0f0f',textColor:'#f0ec3c',
+   saying:'"doing my best\n(citation needed)"',
+   sub:'for when "fine" is a lie you\'ve committed to fully.',
+   price:599,stock:12,sizes:['XS','S','M','L','XL'],oos:[]},
+  {id:2,tag:'softly',emoji:'☕',bg:'#f0ede4',textColor:'#0f0f0f',
+   saying:'"bun maska and\nno small talk"',
+   sub:'irani café energy. no exceptions.',
+   price:599,stock:3,sizes:['S','M','L','XL'],oos:['XS']},
+  {id:3,tag:'existential',emoji:'🐆',bg:'#1a1a0f',textColor:'#f0ec3c',
+   saying:'"leopard country.\nstill checked emails."',
+   sub:'priorities. questionable ones.',
+   price:599,stock:18,sizes:['XS','S','M','L','XL','2XL'],oos:[]},
+  {id:4,tag:'chronically',emoji:'🌐',bg:'#0f0f1a',textColor:'#a0a0f0',
+   saying:'"main character\nin a niche subreddit"',
+   sub:'extremely online. extremely not here.',
+   price:599,stock:7,sizes:['S','M','L','XL'],oos:['XS']},
+  {id:5,tag:'corpo',emoji:'🏢',bg:'#f5f5f5',textColor:'#0f0f0f',
+   saying:'"survived a meeting\nthat couldve been ignored"',
+   sub:'passive resistance. wear it to standups.',
+   price:599,stock:0,sizes:['S','M','L','XL','2XL'],oos:['S','M','L','XL','2XL']},
+  {id:6,tag:'softly',emoji:'🪴',bg:'#0f1a0f',textColor:'#a0f0a0',
+   saying:'"emotionally available\nfor plants only"',
+   sub:'boundaries, but make it photosynthesis.',
+   price:599,stock:9,sizes:['XS','S','M','L'],oos:[]},
+  {id:7,tag:'chronically',emoji:'🔤',bg:'#f0f0f8',textColor:'#0f0f0f',
+   saying:'"i have opinions\nabout fonts"',
+   sub:'unsolicited. always. and you\'re welcome.',
+   price:599,stock:14,sizes:['XS','S','M','L','XL'],oos:[]},
+  {id:8,tag:'existential',emoji:'📵',bg:'#0f0f0f',textColor:'#f8f7f2',
+   saying:'"unread: 2,847\nseen: nothing"',
+   sub:'inbox zero is a myth. you are proof.',
+   price:599,stock:5,sizes:['XS','S','M','L','XL'],oos:['2XL']},
+];
+
+const LAB = [
+  {id:101,tag:'existential',emoji:'🌊',
+   saying:'"city-facing.\nsea-adjacent.\nmostly okay."',
+   sub:'marine drive at 11pm energy, bottled.',
+   votes:19,heat:'fire'},
+  {id:102,tag:'corpo',emoji:'💼',
+   saying:'"i contribute\nto company culture\nby leaving on time"',
+   sub:'radical act of our generation.',
+   votes:14,heat:'fire'},
+  {id:103,tag:'softly',emoji:'🫙',
+   saying:'"healing,\nbut also snacking"',
+   sub:'therapy is expensive. charcuterie is therapy.',
+   votes:11,heat:'warm'},
+  {id:104,tag:'chronically',emoji:'👁',
+   saying:'"perceived online,\ndeceased irl"',
+   sub:'parasocial is a lifestyle.',
+   votes:6,heat:'cold'},
+  {id:105,tag:'existential',emoji:'🕰',
+   saying:'"on time\nto the wrong thing.\nevery time."',
+   sub:'punctual. misaligned. fine.',
+   votes:17,heat:'fire'},
+  {id:106,tag:'corpo',emoji:'📊',
+   saying:'"aligned\non being\nunaligned"',
+   sub:'the most corporate sentence ever spoken.',
+   votes:3,heat:'new'},
+  {id:107,tag:'softly',emoji:'🌙',
+   saying:'"sleeping on it\nfor three weeks"',
+   sub:'the answer will come. probably.',
+   votes:8,heat:'warm'},
+  {id:108,tag:'chronically',emoji:'🎞',
+   saying:'"extremely normal\nabout this"',
+   sub:'*has sent 47 related links in the last hour*',
+   votes:15,heat:'fire'},
+];
+
+// ══════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════
+let currentPage = 'shelf';
+let shelfFilterActive = 'all';
+let labFilterActive = 'all';
+let currentShelfItem = null;
+let currentLabItem = null;
+let selectedSize = null;
+let flashSecs = 0;
+let flashTimer = null;
+let chosenPay = null;
+let customerName = '';
+let cart = [];
+let voted = new Set();
+
+// ══════════════════════════════════════
+//  PAGE ROUTING
+// ══════════════════════════════════════
+function switchPage(name, id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  // nav tabs
+  document.getElementById('tab-shelf').classList.remove('active-shelf');
+  document.getElementById('tab-lab').classList.remove('active-lab');
+  if(name === 'shelf' || name === 'shelf-detail') {
+    document.getElementById('tab-shelf').classList.add('active-shelf');
+  }
+  if(name === 'lab' || name === 'lab-detail' || name === 'interest' || name === 'flash') {
+    document.getElementById('tab-lab').classList.add('active-lab');
+  }
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(name === 'shelf-detail' && id) openShelfDetail(id);
+  if(name === 'lab-detail' && id) openLabDetail(id);
+}
+
+function goHome() { switchPage('shelf'); }
+
+// ══════════════════════════════════════
+//  SHELF RENDER
+// ══════════════════════════════════════
+function stockLabel(s) {
+  if(s === 0) return {cls:'stock-out',txt:'sold out'};
+  if(s <= 5) return {cls:'stock-low',txt:`only ${s} left`};
+  return {cls:'stock-good',txt:'in stock'};
+}
+
+function renderShelf() {
+  let items = shelfFilterActive === 'all' ? SHELF : SHELF.filter(s => s.tag === shelfFilterActive);
+  const grid = document.getElementById('shelf-grid');
+  grid.innerHTML = items.map(s => {
+    const st = stockLabel(s.stock);
+    return `<div class="shelf-card" onclick="switchPage('shelf-detail',${s.id})">
+      <div class="shelf-visual" style="background:${s.bg};color:${s.textColor}">
+        <div class="shelf-visual-bg">${s.emoji}</div>
+        <span style="position:relative;z-index:1;font-size:13px;">${s.saying}</span>
+      </div>
+      <div class="shelf-body">
+        <div class="shelf-name">${s.saying.replace(/\n/g,' ')}</div>
+        <div class="shelf-vibe">${s.tag}</div>
+        <div class="shelf-bottom">
+          <div>
+            <div class="shelf-price">₹${s.price}</div>
+            <div class="shelf-stock ${st.cls}">${st.txt}</div>
+          </div>
+          <button class="add-btn" ${s.stock===0?'disabled':''} onclick="event.stopPropagation();quickAdd(${s.id})">
+            ${s.stock===0?'sold out':'+ bag'}
+          </button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function shelfFilter(tag, el) {
+  shelfFilterActive = tag;
+  document.querySelectorAll('#shelf-filter-pills .fpill').forEach(p => p.classList.remove('on'));
+  el.classList.add('on');
+  renderShelf();
+}
+
+function shelfSort(val) {
+  if(val === 'low') SHELF.sort((a,b) => a.stock - b.stock);
+  else if(val === 'az') SHELF.sort((a,b) => a.saying.localeCompare(b.saying));
+  else SHELF.sort((a,b) => a.id - b.id);
+  renderShelf();
+}
+
+function openShelfDetail(id) {
+  currentShelfItem = SHELF.find(s => s.id === id);
+  selectedSize = null;
+  const s = currentShelfItem;
+  const st = stockLabel(s.stock);
+  document.getElementById('shelf-detail-content').innerHTML = `
+    <div class="shelf-detail-grid">
+      <div class="shelf-detail-visual" style="background:${s.bg};color:${s.textColor}">
+        <div style="position:absolute;font-size:100px;opacity:.07;">${s.emoji}</div>
+        <span style="position:relative;z-index:1;">${s.saying}</span>
+      </div>
+      <div class="shelf-detail-right">
+        <p class="eyebrow" style="margin-bottom:.75rem;">${s.tag}</p>
+        <h2 style="font-size:24px;font-weight:700;letter-spacing:-.8px;font-family:var(--font-m);line-height:1.2;margin-bottom:.5rem;">${s.saying.replace(/\n/g,' ')}</h2>
+        <p style="font-size:14px;color:var(--gray-600);line-height:1.7;margin-bottom:1rem;">${s.sub}</p>
+        <div class="detail-price-row">
+          <div class="detail-price">₹${s.price}</div>
+          <div class="detail-shipping">free shipping · COD available</div>
+        </div>
+        <p style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--gray-400);margin-bottom:8px;">select size</p>
+        <div class="size-row" id="shelf-size-row">
+          ${s.sizes.map(sz => `<button class="sz ${s.oos.includes(sz)?'oos':''}" onclick="${s.oos.includes(sz)?'':''}" ${s.oos.includes(sz)?'disabled':''} data-size="${sz}" onclick="pickShelfSize('${sz}',this)">${sz}</button>`).join('')}
+        </div>
+        <button class="atc-btn" id="shelf-atc" onclick="addToCart()" disabled>add to bag</button>
+        <p class="atc-hint">pick a size first · ships via qikink in 3–5 days</p>
+        <div class="detail-meta">
+          <div class="detail-meta-row"><span>material</span><span>100% ring-spun cotton</span></div>
+          <div class="detail-meta-row"><span>print</span><span>DTG (direct to garment)</span></div>
+          <div class="detail-meta-row"><span>fulfilled by</span><span>qikink, india</span></div>
+          <div class="detail-meta-row"><span>delivery</span><span>3–5 working days, all india</span></div>
+          <div class="detail-meta-row"><span>stock</span><span class="${st.cls}">${st.txt}</span></div>
+        </div>
+      </div>
+    </div>
+  `;
+  // rebind size clicks after render
+  document.querySelectorAll('#shelf-size-row .sz:not(.oos)').forEach(btn => {
+    btn.onclick = () => pickShelfSize(btn.dataset.size, btn);
+  });
+}
+
+function pickShelfSize(sz, el) {
+  selectedSize = sz;
+  document.querySelectorAll('#shelf-size-row .sz').forEach(b => b.classList.remove('picked'));
+  el.classList.add('picked');
+  document.getElementById('shelf-atc').disabled = false;
+}
+
+function quickAdd(id) {
+  currentShelfItem = SHELF.find(s => s.id === id);
+  // default to M or first available
+  const available = currentShelfItem.sizes.filter(sz => !currentShelfItem.oos.includes(sz));
+  selectedSize = available.includes('M') ? 'M' : available[0];
+  addToCart(true);
+}
+
+function addToCart(quick) {
+  if(!selectedSize && !quick) { toast('pick a size first.'); return; }
+  if(!currentShelfItem) return;
+  const existing = cart.find(c => c.id === currentShelfItem.id && c.size === selectedSize);
+  if(existing) { toast('already in your bag.'); return; }
+  cart.push({
+    id: currentShelfItem.id,
+    saying: currentShelfItem.saying,
+    emoji: currentShelfItem.emoji,
+    bg: currentShelfItem.bg,
+    textColor: currentShelfItem.textColor,
+    size: selectedSize,
+    price: currentShelfItem.price,
+  });
+  updateCartUI();
+  toast(`added to bag · size ${selectedSize} · ₹${currentShelfItem.price}`);
+  openCart();
+}
+
+// ══════════════════════════════════════
+//  CART
+// ══════════════════════════════════════
+function updateCartUI() {
+  const count = document.getElementById('cart-count');
+  count.textContent = cart.length;
+  count.style.display = cart.length > 0 ? 'flex' : 'none';
+  renderCart();
+}
+
+function renderCart() {
+  const el = document.getElementById('cart-items');
+  const foot = document.getElementById('cart-foot');
+  if(cart.length === 0) {
+    el.innerHTML = '<div class="cart-empty">your bag is empty.<br>go find something.</div>';
+    foot.style.display = 'none';
+    return;
+  }
+  el.innerHTML = cart.map((c,i) => `
+    <div class="cart-item">
+      <div class="ci-visual" style="background:${c.bg};color:${c.textColor}">${c.emoji}</div>
+      <div style="flex:1;">
+        <div class="ci-name">${c.saying.replace(/\n/g,' ')}</div>
+        <div class="ci-meta">size ${c.size}</div>
+        <button class="ci-remove" onclick="removeFromCart(${i})">remove</button>
+      </div>
+      <div class="ci-price">₹${c.price}</div>
+    </div>
+  `).join('');
+  const total = cart.reduce((s,c) => s + c.price, 0);
+  document.getElementById('cart-total').textContent = `₹${total}`;
+  foot.style.display = 'block';
+}
+
+function removeFromCart(i) {
+  cart.splice(i, 1);
+  updateCartUI();
+}
+
+function openCart() {
+  document.getElementById('cart-overlay').classList.add('open');
+  document.getElementById('cart-drawer').classList.add('open');
+}
+function closeCart() {
+  document.getElementById('cart-overlay').classList.remove('open');
+  document.getElementById('cart-drawer').classList.remove('open');
+}
+function checkout() {
+  closeCart();
+  toast('redirecting to razorpay... (demo)');
+}
+
+// ══════════════════════════════════════
+//  LAB RENDER
+// ══════════════════════════════════════
+function renderLab() {
+  let items = labFilterActive === 'all' ? LAB
+    : labFilterActive === 'hot' ? LAB.filter(l => l.votes >= 14)
+    : LAB.filter(l => l.tag === labFilterActive);
+  items = [...items].sort((a,b) => b.votes - a.votes);
+  const grid = document.getElementById('lab-grid');
+  grid.innerHTML = items.map(l => {
+    const pct = (l.votes/20)*100;
+    const spotsLeft = 20 - l.votes;
+    const isHot = l.votes >= 14;
+    const isVoted = voted.has(l.id);
+    const heatMap = {fire:'heat-fire 🔥 nearly there',warm:'heat-fire 🌡 heating up',cold:'heat-cold 💤 needs love',new:'heat-new ✦ just dropped'};
+    const [heatCls, heatTxt] = heatMap[l.heat].split(' ').reduce((a,v,i) => i===0?[v,'']:[a[0],a[1]+' '+v],['','']);
+    const slots = Array.from({length:20},(_,i) =>
+      `<span class="sdot ${i < l.votes ? (i === l.votes-1 && isVoted ? 'hot' : 'filled') : ''}"></span>`
+    ).join('');
+    return `
+    <div class="lab-card" onclick="switchPage('lab-detail',${l.id})">
+      <div class="lab-card-top">
+        <span class="lab-card-num">${String(l.id).replace('10','')}</span>
+        <span class="lab-heat-badge ${heatCls}">${heatTxt.trim()}</span>
+      </div>
+      <div class="lab-saying">${l.saying}</div>
+      <div class="lab-sub-text">${l.sub}</div>
+      <div class="vote-bar-wrap">
+        <div class="vote-bar-header">
+          <span class="vote-count-label"><strong>${l.votes}</strong> / 20 votes</span>
+          <span class="spots-left ${isHot?'spots-fire':'spots-cold'}">${isHot ? `${spotsLeft} spot${spotsLeft===1?'':'s'} left` : `${spotsLeft} to go`}</span>
+        </div>
+        <div class="vote-bar"><div class="vote-fill ${isHot?'fill-hot':'fill-cold'}" style="width:${pct}%"></div></div>
+      </div>
+      <div class="slot-dots">${slots}</div>
+      <div class="lab-card-footer">
+        <span class="vibe-tag">${l.tag}</span>
+        <button class="vote-btn ${isVoted?'voted':''} ${l.votes>=20?'flash-ready':''}"
+          onclick="event.stopPropagation();castVote(${l.id})">
+          ${l.votes >= 20 ? '⚡ flash open' : isVoted ? '✓ voted' : 'i want this'}
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function labFilter(tag, el) {
+  labFilterActive = tag;
+  document.querySelectorAll('#lab-filter-pills .lfpill').forEach(p => p.classList.remove('on'));
+  el.classList.add('on');
+  renderLab();
+}
+
+function castVote(id) {
+  if(voted.has(id)) { toast('already voted.'); return; }
+  const item = LAB.find(l => l.id === id);
+  item.votes = Math.min(item.votes + 1, 20);
+  voted.add(id);
+  renderLab();
+  if(item.votes >= 20) {
+    document.getElementById('nav-live').style.display = 'flex';
+    toast(`⚡ ${item.saying.split('\n')[0]} just hit 20! flash sale opening...`, 4000);
+    setTimeout(() => {
+      currentLabItem = item;
+      selectedSize = null;
+      switchPage('lab-detail', item.id);
+    }, 1500);
+  } else {
+    toast(`vote locked. ${20 - item.votes} more needed.`);
+  }
+}
+
+function openLabDetail(id) {
+  currentLabItem = LAB.find(l => l.id === id);
+  selectedSize = null;
+  const l = currentLabItem;
+  const pct = (l.votes/20)*100;
+  const spotsLeft = 20 - l.votes;
+  const isVoted = voted.has(l.id);
+  const slots = Array.from({length:20},(_,i) =>
+    `<span class="sdot" style="${i<l.votes?'background:#f0ec3c;border-color:#c8c420;':''}" ></span>`
+  ).join('');
+  const sizesHTML = ['XS','S','M','L','XL','2XL'].map(sz =>
+    `<button class="sz" style="background:#0d0d0d;border-color:#1e1e1e;color:#666;" data-size="${sz}" onclick="pickLabSize('${sz}',this)">${sz}</button>`
+  ).join('');
+
+  document.getElementById('lab-detail-content').innerHTML = `
+    <div class="lab-detail-grid">
+      <div class="lab-visual-block">
+        <span style="font-family:var(--font-m);font-size:16px;font-weight:700;line-height:1.5;">${l.saying}</span>
+      </div>
+      <div>
+        <p class="lab-detail-tag">${l.tag}</p>
+        <h2 class="lab-detail-h2">${l.saying.replace(/\n/g,' ')}</h2>
+        <p class="lab-detail-sub">${l.sub}</p>
+        <div class="unlock-panel">
+          <div class="unlock-panel-head">
+            <span class="unlock-panel-title">${l.votes} / 20 votes</span>
+            ${spotsLeft <= 4 ? `<span class="nearly-tag">${spotsLeft} spot${spotsLeft===1?'':'s'} left</span>` : ''}
+          </div>
+          <div class="vote-bar"><div class="vote-fill ${l.votes>=14?'fill-hot':'fill-cold'}" style="width:${pct}%"></div></div>
+          <div class="slot-dots" style="margin-top:10px;">${slots}</div>
+          <p style="font-size:11px;color:#333;margin-top:10px;line-height:1.5;">
+            ${l.votes>=20 ? '⚡ flash sale is open right now. 20 minutes only.' : spotsLeft <= 4 ? `⚡ almost there — when #20 votes, the flash fires immediately.` : `${spotsLeft} more votes and a 20-minute flash sale opens for these exact people. pay what you want.`}
+          </p>
+        </div>
+        <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#333;margin-bottom:10px;">your size</p>
+        <div class="size-row" id="lab-size-row" style="margin-bottom:1.5rem;">${sizesHTML}</div>
+        <button class="interest-btn" id="lab-interest-btn" onclick="goInterest()" disabled>
+          ${l.votes >= 20 ? '⚡ join the flash sale now' : 'express interest — no payment'}
+        </button>
+        <p class="lab-detail-hint">${l.votes >= 20 ? '20 minutes on the clock.' : 'pick a size to lock your spot. zero commitment.'}</p>
+      </div>
+    </div>
+  `;
+  document.querySelectorAll('#lab-size-row .sz').forEach(btn => {
+    btn.onclick = () => pickLabSize(btn.dataset.size, btn);
+  });
+}
+
+function pickLabSize(sz, el) {
+  selectedSize = sz;
+  document.querySelectorAll('#lab-size-row .sz').forEach(b => {
+    b.style.background='#0d0d0d'; b.style.borderColor='#1e1e1e'; b.style.color='#666';
+  });
+  el.style.background = 'var(--yellow)';
+  el.style.borderColor = 'var(--yellow)';
+  el.style.color = 'var(--ink)';
+  document.getElementById('lab-interest-btn').disabled = false;
+}
+
+function goInterest() {
+  if(!selectedSize) return;
+  const l = currentLabItem;
+  const spotNum = l.votes + 1;
+  document.getElementById('interest-preview').innerHTML = `
+    <div class="form-preview-emoji">${l.emoji}</div>
+    <div><div class="form-preview-saying">${l.saying.replace(/\n/g,' ')}</div>
+    <div class="form-preview-meta">size ${selectedSize} · spot #${spotNum} of 20</div></div>
+  `;
+  const spotsLeft = 20 - l.votes;
+  document.getElementById('spot-banner').innerHTML =
+    `✅ &nbsp;you'll be spot <strong>${spotNum}</strong> of 20 &nbsp;·&nbsp; ${spotsLeft > 1 ? spotsLeft-1+' more after you' : 'you unlock the flash!'}`;
+  switchPage('interest');
+}
+
+function submitInterest() {
+  const name = document.getElementById('f-name').value.trim();
+  const email = document.getElementById('f-email').value.trim();
+  if(!name || !email) { toast('name and email — that\'s all we need.'); return; }
+  if(!email.includes('@')) { toast('that email looks off.'); return; }
+  customerName = name;
+  const l = currentLabItem;
+  l.votes = Math.min(l.votes + 1, 20);
+  voted.add(l.id);
+  renderLab();
+  if(l.votes >= 20) {
+    document.getElementById('nav-live').style.display = 'flex';
+    startFlash(l, name);
+  } else {
+    showSuccess('interest', name, l);
+  }
+}
+
+// ══════════════════════════════════════
+//  FLASH SALE
+// ══════════════════════════════════════
+function startFlash(l, name) {
+  flashSecs = 20 * 60;
+  chosenPay = null;
+  document.getElementById('flash-shirt-row').innerHTML = `
+    <div class="flash-shirt-emoji">${l.emoji}</div>
+    <div>
+      <div class="flash-shirt-saying">${l.saying.replace(/\n/g,' ')}</div>
+      <div class="flash-shirt-size">size ${selectedSize} · 1 of 20</div>
+    </div>
+  `;
+  const opts = [{v:299,l:'₹299',d:'cover costs'},{v:499,l:'₹499',d:'feels right'},{v:799,l:'₹799',d:'back it properly'},{v:999,l:'₹999',d:'you legend'}];
+  document.getElementById('pay-grid').innerHTML = opts.map(o => `
+    <div class="pay-opt" onclick="pickPay(${o.v},this)">
+      <div class="pay-amt">${o.l}</div>
+      <div class="pay-desc">${o.d}</div>
+    </div>
+  `).join('');
+  switchPage('flash');
+  tickFlash();
+  if(flashTimer) clearInterval(flashTimer);
+  flashTimer = setInterval(tickFlash, 1000);
+  toast(`⚡ flash is live, ${name.split(' ')[0]}. 20 minutes.`, 5000);
+}
+
+function tickFlash() {
+  flashSecs--;
+  if(flashSecs <= 0) {
+    clearInterval(flashTimer);
+    document.getElementById('nav-live').style.display = 'none';
+    switchPage('expired');
+    return;
+  }
+  const m = Math.floor(flashSecs/60).toString().padStart(2,'0');
+  const s = (flashSecs%60).toString().padStart(2,'0');
+  const cd = document.getElementById('flash-cd');
+  if(cd) {
+    cd.textContent = `${m}:${s}`;
+    if(flashSecs < 180) cd.classList.add('urgent');
+  }
+  const bar = document.getElementById('flash-bar');
+  if(bar) bar.style.width = `${(flashSecs/(20*60))*100}%`;
+}
+
+function pickPay(v, el) {
+  chosenPay = v;
+  document.querySelectorAll('.pay-opt').forEach(e => e.classList.remove('sel'));
+  el.classList.add('sel');
+  document.getElementById('custom-pay').value = '';
+  document.getElementById('pay-show').textContent = `₹${v}`;
+  document.getElementById('confirm-btn').disabled = false;
+}
+
+function customPayInput(val) {
+  const v = parseInt(val);
+  if(v > 0) {
+    chosenPay = v;
+    document.querySelectorAll('.pay-opt').forEach(e => e.classList.remove('sel'));
+    document.getElementById('pay-show').textContent = `₹${v}`;
+    document.getElementById('confirm-btn').disabled = false;
+  }
+}
+
+function completePurchase() {
+  if(!chosenPay) return;
+  clearInterval(flashTimer);
+  flashTimer = null;
+  document.getElementById('nav-live').style.display = 'none';
+  const l = currentLabItem;
+  const first = customerName.split(' ')[0];
+  showSuccess('flash', customerName, l);
+}
+
+// ══════════════════════════════════════
+//  SUCCESS
+// ══════════════════════════════════════
+function showSuccess(type, name, item) {
+  const first = name.split(' ')[0];
+  switchPage('success');
+  const isFlash = type === 'flash';
+  document.getElementById('s-icon').textContent = isFlash ? '✌️' : '🎟';
+  document.getElementById('s-h').textContent = isFlash ? `you got it, ${first}.` : `you're in, ${first}.`;
+  document.getElementById('s-p').textContent = isFlash
+    ? `₹${chosenPay} paid. 1 of 20 made. ships in 3–5 days once all 20 confirm. you're officially part of this shirt's origin story.`
+    : `spot ${item.votes} of 20. ${20-item.votes} more people and the flash fires. we'll email you the second it does.`;
+  const slots = Array.from({length:20},(_,i) =>
+    `<span style="display:inline-block;width:12px;height:12px;border-radius:3px;margin:2px;background:${i<item.votes?i===item.votes-1?'var(--yellow)':'var(--ink)':'var(--gray-100)'};border:1px solid ${i<item.votes?i===item.votes-1?'var(--yellow-dim)':'var(--ink)':'var(--gray-200)'};"></span>`
+  ).join('');
+  document.getElementById('s-card').innerHTML = isFlash ? `
+    <div class="srow"><span>shirt</span><span>${item.saying.replace(/\n/g,' ').substring(0,32)}...</span></div>
+    <div class="srow"><span>size</span><span>${selectedSize}</span></div>
+    <div class="srow"><span>edition</span><span>1 of 20</span></div>
+    <div class="srow"><span>fulfilled by</span><span>qikink, india</span></div>
+    <div class="srow"><span>paid</span><span>₹${chosenPay}</span></div>
+  ` : `
+    <p style="font-size:10px;color:#333;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">your slot</p>
+    <div>${slots}</div>
+    <p style="font-size:10px;color:#333;margin-top:8px;">🟡 yellow = you</p>
+    <div class="srow" style="margin-top:12px;"><span>shirt</span><span>${item.saying.replace(/\n/g,' ').substring(0,30)}...</span></div>
+    <div class="srow"><span>size</span><span>${selectedSize}</span></div>
+    <div class="srow"><span>payment</span><span>nothing yet</span></div>
+  `;
+  document.getElementById('s-btn').textContent = isFlash ? 'see what else is brewing' : 'back to the lab';
+  document.getElementById('s-btn').onclick = () => switchPage(isFlash ? 'lab' : 'lab');
+}
+
+// ── BAD WORD FILTER ──
+const BAD = ['fuck','shit','cunt','bitch','asshole','bastard','damn','piss','cock','dick','pussy','slut','whore','nigger','nigga','faggot','retard','chutiya','madarchod','bhenchod','gaandu','randi','harami','sala','saala','bhosdike','lodu','lauda'];
+function hasBadWord(str) {
+  const lower = str.toLowerCase().replace(/[^a-z]/g,' ');
+  return BAD.some(w => lower.split(/\s+/).includes(w));
+}
+
+// ══════════════════════════════════════
+//  IDEA MODAL
+// ══════════════════════════════════════
+function openModal() { document.getElementById('idea-modal').classList.add('open'); }
+function closeModal() {
+  document.getElementById('idea-modal').classList.remove('open');
+  document.getElementById('idea-saying').value = '';
+  document.getElementById('idea-why').value = '';
+}
+function submitIdea() {
+  const saying = document.getElementById('idea-saying').value.trim();
+  if(!saying) { toast('give us the saying. that\'s the whole point.'); return; }
+  if(saying.length < 4) { toast('a little more than that.'); return; }
+  if(hasBadWord(saying)) { toast('keep it weird, not gross. try again.'); return; }
+  const why = document.getElementById('idea-why').value.trim();
+  if(why && hasBadWord(why)) { toast('the why can be edgy, not offensive. try again.'); return; }
+  const vibe = document.getElementById('idea-vibe').value;
+  const vibeEmojis = {existential:'🌑',softly:'🌿',chronically:'🌐',corpo:'🏢'};
+  LAB.unshift({
+    id: Date.now(), tag: vibe, emoji: vibeEmojis[vibe],
+    saying: `"${saying}"`,
+    sub: why || 'freshly pitched. make some noise.',
+    votes: 0, heat: 'new'
+  });
+  closeModal();
+  labFilterActive = 'all';
+  document.querySelectorAll('#lab-filter-pills .lfpill').forEach(p => p.classList.remove('on'));
+  document.querySelector('#lab-filter-pills .lfpill').classList.add('on');
+  renderLab();
+  switchPage('lab');
+  toast('your idea is live. now get people to vote. 🎯', 4000);
+}
+
+// ══════════════════════════════════════
+//  TOAST
+// ══════════════════════════════════════
+let toastTimer;
+function toast(msg, dur=3000) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), dur);
+}
+
+// ══════════════════════════════════════
+//  SHARE
+// ══════════════════════════════════════
+function shareIt() {
+  const txt = encodeURIComponent('just got a threadbare shirt. 1 of 20. pay what you want. the concept is unhinged and i love it. threadbare.in');
+  if(navigator.share) {
+    navigator.share({title:'threadbare.',text:'check this out.',url:'https://threadbare.in'}).catch(()=>{});
+  } else {
+    window.open(`https://wa.me/?text=${txt}`,'_blank');
+  }
+}
+
+// ══════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════
+renderShelf();
+renderLab();
+</script>
+</body>
+</html>
