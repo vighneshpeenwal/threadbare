@@ -830,40 +830,30 @@ textarea.f-input{resize:vertical;min-height:70px;}
 // ══════════════════════════════════════
 //  DATA
 // ══════════════════════════════════════
-const SHELF = [
-  {id:1,tag:'existential',emoji:'🖤',bg:'#0f0f0f',textColor:'#f0ec3c',
-   saying:'"doing my best\n(citation needed)"',
-   sub:'for when "fine" is a lie you\'ve committed to fully.',
-   price:599,stock:12,sizes:['XS','S','M','L','XL'],oos:[]},
-  {id:2,tag:'softly',emoji:'☕',bg:'#f0ede4',textColor:'#0f0f0f',
-   saying:'"bun maska and\nno small talk"',
-   sub:'irani café energy. no exceptions.',
-   price:599,stock:3,sizes:['S','M','L','XL'],oos:['XS']},
-  {id:3,tag:'existential',emoji:'🐆',bg:'#1a1a0f',textColor:'#f0ec3c',
-   saying:'"leopard country.\nstill checked emails."',
-   sub:'priorities. questionable ones.',
-   price:599,stock:18,sizes:['XS','S','M','L','XL','2XL'],oos:[]},
-  {id:4,tag:'chronically',emoji:'🌐',bg:'#0f0f1a',textColor:'#a0a0f0',
-   saying:'"main character\nin a niche subreddit"',
-   sub:'extremely online. extremely not here.',
-   price:599,stock:7,sizes:['S','M','L','XL'],oos:['XS']},
-  {id:5,tag:'corpo',emoji:'🏢',bg:'#f5f5f5',textColor:'#0f0f0f',
-   saying:'"survived a meeting\nthat couldve been ignored"',
-   sub:'passive resistance. wear it to standups.',
-   price:599,stock:0,sizes:['S','M','L','XL','2XL'],oos:['S','M','L','XL','2XL']},
-  {id:6,tag:'softly',emoji:'🪴',bg:'#0f1a0f',textColor:'#a0f0a0',
-   saying:'"emotionally available\nfor plants only"',
-   sub:'boundaries, but make it photosynthesis.',
-   price:599,stock:9,sizes:['XS','S','M','L'],oos:[]},
-  {id:7,tag:'chronically',emoji:'🔤',bg:'#f0f0f8',textColor:'#0f0f0f',
-   saying:'"i have opinions\nabout fonts"',
-   sub:'unsolicited. always. and you\'re welcome.',
-   price:599,stock:14,sizes:['XS','S','M','L','XL'],oos:[]},
-  {id:8,tag:'existential',emoji:'📵',bg:'#0f0f0f',textColor:'#f8f7f2',
-   saying:'"unread: 2,847\nseen: nothing"',
-   sub:'inbox zero is a myth. you are proof.',
-   price:599,stock:5,sizes:['XS','S','M','L','XL'],oos:['2XL']},
-];
+let SHELF = [];
+
+async function loadShelf() {
+  try {
+    const rows = await supa.get('shelf', 'active=eq.true&order=created_at.asc');
+    SHELF = rows.map(r => ({
+      id: r.id,
+      tag: r.tag,
+      emoji: r.emoji,
+      bg: r.bg,
+      textColor: r.text_color,
+      saying: r.saying,
+      sub: r.sub,
+      price: r.price,
+      stock: r.stock,
+      sizes: r.sizes,
+      oos: r.oos || [],
+      img: r.img || null
+    }));
+    renderShelf();
+  } catch(e) {
+    console.error('shelf load failed', e);
+  }
+}
 
 // LAB loaded from Supabase — starts empty, filled on init
 let LAB = [];
@@ -1657,7 +1647,7 @@ async function submitIdea() {
 const savedEmail = localStorage.getItem('tb_email');
 const savedName = localStorage.getItem('tb_name');
 
-renderShelf();
+loadShelf();
 loadLab();
 </script>
 </body>
